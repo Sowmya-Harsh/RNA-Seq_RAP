@@ -1,4 +1,0 @@
-export(load_example_data)
-export(run_deseq2_condition)
-export(plot_ma_simple)
-import(DESeq2)
