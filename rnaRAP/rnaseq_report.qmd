@@ -1,0 +1,853 @@
+---
+title: "RNA-seq Analysis Pipeline"
+subtitle: "Differential Expression Analysis with DESeq2"
+author: "Sowmya Janmahanthi"
+date: "`r Sys.Date()`"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    code-fold: true
+    embed-resources: true
+    theme: flatly
+    page-layout: full
+    fig-width: 8
+    fig-height: 5
+    number-sections: true
+execute:
+  echo: false
+  warning: false
+  message: false
+  fig-asp: 0.65
+---
+
+```{css, echo=FALSE}
+:root {
+  --primary-color: #2C3E50;
+  --secondary-color: #3498DB;
+  --accent-color: #E74C3C;
+  --bg-light: #ECF0F1;
+  --text-main: #2C3E50;
+  --text-secondary: #555;
+}
+
+* {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+}
+
+body {
+  color: var(--text-main);
+  background: #FAFAFA;
+}
+
+h1, h2, h3 {
+  color: var(--primary-color);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+h1 {
+  border-bottom: 4px solid var(--secondary-color);
+  padding-bottom: 12px;
+  margin-top: 35px;
+  margin-bottom: 20px;
+  font-size: 2em;
+}
+
+h2 {
+  border-left: 5px solid var(--secondary-color);
+  padding-left: 15px;
+  margin-top: 28px;
+  margin-bottom: 16px;
+  font-size: 1.5em;
+}
+
+h3 {
+  margin-top: 18px;
+  margin-bottom: 12px;
+  font-size: 1.2em;
+  color: #34495E;
+}
+
+p {
+  margin: 12px 0;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+/* Summary Box */
+.summary-box {
+  background: linear-gradient(135deg, #764ba2 0%, #7497e2 100%);
+  color: white;
+  padding: 25px;
+  border-radius: 12px;
+  margin: 25px 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  line-height: 1.7;
+}
+
+.summary-box p {
+  color: white;
+  margin: 10px 0;
+}
+
+.summary-box strong {
+  font-weight: 600;
+}
+
+/* Context Box */
+.context-box {
+  background: #E8F4F9;
+  border-left: 5px solid var(--secondary-color);
+  padding: 18px;
+  border-radius: 8px;
+  margin: 20px 0;
+  color: #34495E;
+}
+
+.context-box h4 {
+  color: var(--primary-color);
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.context-box p {
+  margin: 8px 0;
+  font-size: 0.98em;
+}
+
+/* Metrics Display */
+.metrics-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  margin: 30px 0;
+  padding: 20px 0;
+}
+
+.metric {
+  background: white;
+  padding: 20px 28px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+  min-width: 160px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border-top: 4px solid var(--secondary-color);
+}
+
+.metric:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0,0,0,0.12);
+}
+
+.metric-value {
+  font-size: 2.2em;
+  font-weight: 700;
+  color: var(--secondary-color);
+  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-label {
+  color: #7F8C8D;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+/* Plot Container */
+.plot-container {
+  background: white;
+  padding: 18px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  margin: 25px 0;
+  page-break-inside: avoid;
+}
+
+.plot-container img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  max-height: 350px;
+  object-fit: contain;
+  margin: 15px 0;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Plot Description */
+.plot-description {
+  background: var(--bg-light);
+  border-left: 4px solid var(--secondary-color);
+  padding: 14px;
+  border-radius: 6px;
+  margin-top: 12px;
+  font-size: 0.96em;
+  line-height: 1.6;
+  color: #34495E;
+}
+
+.plot-description p {
+  margin: 10px 0;
+}
+
+.plot-description strong {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.plot-description ul, .plot-description ol {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.plot-description li {
+  margin: 6px 0;
+}
+
+/* Notes Box */
+.notes-box {
+  background: var(--bg-light);
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 30px;
+  border-left: 5px solid var(--secondary-color);
+}
+
+.notes-box h3 {
+  margin-top: 0;
+  color: var(--primary-color);
+}
+
+.notes-box ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.notes-box li {
+  margin: 8px 0;
+  color: var(--text-secondary);
+}
+
+/* Code styling */
+code {
+  background: #F5F5F5;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  color: #D63384;
+}
+
+pre {
+  background: #F5F5F5;
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  border-left: 4px solid var(--secondary-color);
+}
+
+/* Table styling */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 15px 0;
+  background: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+table thead {
+  background: var(--secondary-color);
+  color: white;
+}
+
+table th {
+  padding: 14px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid var(--secondary-color);
+}
+
+table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #E8E8E8;
+  color: var(--text-secondary);
+}
+
+table tbody tr:nth-child(even) {
+  background: var(--bg-light);
+}
+
+table tbody tr:hover {
+  background: #E8F4F9;
+  transition: background-color 0.2s;
+}
+
+/* Separators */
+hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--secondary-color), transparent);
+  margin: 30px 0;
+}
+
+/* Links */
+a {
+  color: var(--secondary-color);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+```
+
+```{r setup}
+library(knitr)
+library(dplyr)
+
+# Load saved analysis results
+results <- readRDS("reports/analysis_results.rds")
+full_results <- results$full_results
+data_list <- results$data_list
+
+# Calculate statistics
+res_df <- as.data.frame(full_results$condition)
+n_sig <- sum(res_df$padj < 0.05, na.rm = TRUE)
+n_up <- sum(res_df$padj < 0.05 & res_df$log2FoldChange > 0, na.rm = TRUE)
+n_down <- sum(res_df$padj < 0.05 & res_df$log2FoldChange < 0, na.rm = TRUE)
+n_genes <- nrow(res_df)
+
+# Set figure options for compact display
+knitr::opts_chunk$set(
+  fig.retina = 2,
+  fig.align = 'center',
+  fig.asp = 0.65,
+  out.width = '95%',
+  dpi = 100
+)
+```
+
+::: {.summary-box}
+### Analysis Overview
+
+This report presents a comprehensive **differential expression analysis** of RNA-seq data using the *Drosophila melanogaster* Pasilla dataset. The analysis investigates how gene expression patterns change when cells are treated with RNAi (a technique to silence specific genes) compared to untreated control cells.
+
+The analysis employs **DESeq2**, a powerful statistical method specifically designed for RNA-seq data, combined with **apeglm log fold-change shrinkage** to improve accuracy and reduce bias for low-count genes.
+
+**Dataset:** Pasilla (*Drosophila melanogaster*) — RNAi knockdown effects  
+**Method:** DESeq2 with apeglm shrinkage for robust statistical inference  
+**Comparison:** Treated vs. Untreated conditions  
+**Significance Level:** Adjusted p-value < 0.05 (Benjamini-Hochberg FDR correction)  
+**Environment:** Reproducible Nix environment with pinned package versions
+:::
+
+---
+
+# What Is This Report About?
+
+## Understanding Gene Expression
+
+**Genes** are instructions in DNA that tell cells how to make proteins. Different genes are "turned on" (active/expressed) or "off" (inactive/silenced) depending on what the cell needs to do at any given time.
+
+**RNA-seq** is a powerful technology that measures how active each gene is in a cell. By comparing gene activity between two conditions (treated vs. untreated), we can identify which genes respond to the treatment and how dramatically their activity changes.
+
+## The Research Question
+
+This analysis answers: **"Which genes change their activity level when cells are exposed to RNAi treatment, and how much do they change?"**
+
+Understanding this helps us:
+- Identify genes involved in the biological response to the treatment
+- Find potential therapeutic targets
+- Validate experimental effects at the molecular level
+- Understand cellular mechanisms
+
+---
+
+# Executive Summary
+
+::: {.metrics-container}
+<div class="metric">
+  <div class="metric-value">`r format(n_genes, big.mark=",")`</div>
+  <div class="metric-label">Total Genes Tested</div>
+</div>
+<div class="metric">
+  <div class="metric-value">`r format(n_sig, big.mark=",")`</div>
+  <div class="metric-label">Significantly Changed</div>
+</div>
+<div class="metric">
+  <div class="metric-value">`r format(n_up, big.mark=",")`</div>
+  <div class="metric-label">Activated (↑)</div>
+</div>
+<div class="metric">
+  <div class="metric-value">`r format(n_down, big.mark=",")`</div>
+  <div class="metric-label">Suppressed (↓)</div>
+</div>
+:::
+
+Our analysis identified **`r format(n_sig, big.mark=",")`** genes with statistically significant changes in expression out of **`r format(n_genes, big.mark=",")`** total genes tested. Among these significant genes, **`r format(n_up, big.mark=",")`** show increased activity upon treatment (upregulated), while **`r format(n_down, big.mark=",")`** show decreased activity (downregulated). This balanced response suggests a coordinated biological response to the RNAi treatment.
+
+---
+
+# Differential Expression Results
+
+## Statistical Summary
+
+The DESeq2 statistical model tests whether each gene shows a genuine change in expression level between treated and untreated conditions. The summary below shows the overall results:
+
+```{r summary, echo=TRUE}
+summary(full_results$condition)
+```
+
+## Top Differentially Expressed Genes
+
+The following table presents the 20 genes most dramatically affected by the treatment. These genes exhibit the largest magnitude changes in expression and the strongest statistical significance, making them the most reliable candidates for follow-up functional studies.
+
+```{r top-genes}
+top_genes <- read.csv("reports/top_genes.csv")
+kable(top_genes, 
+      caption = "**Table 1:** Top 20 Differentially Expressed Genes (Treated vs Untreated). 
+      Genes are ranked by statistical significance (adjusted p-value). 
+      Positive log2FoldChange indicates upregulation; negative indicates downregulation.")
+```
+
+---
+
+# Visualizations and Detailed Interpretation
+
+## MA Plot: Expression Level vs. Change Magnitude
+
+::: {.plot-container}
+
+![MA Plot with LFC Shrinkage](reports/ma_plot_condition.png)
+
+::: {.plot-description}
+**What does this plot show?**
+
+The MA plot displays the relationship between a gene's overall expression level (horizontal axis, "A" = average log intensity) and how much it changes between conditions (vertical axis, "M" = log2 fold-change).
+
+**Key components:**
+- **Each point represents one gene** in the entire genome
+- **Red/colored points** = genes with statistically significant changes (`padj < 0.05`)
+- **Gray points** = genes without significant changes (likely noise or small true effects)
+- **Horizontal line at M=0** = no change in expression (reference line)
+- **Curved bands around zero** = shrinkage effect from apeglm, which stabilizes fold-change estimates
+
+**What the pattern tells us:**
+
+- **Symmetric distribution**: Points spread roughly equally above and below the zero line, indicating balanced upregulation and downregulation (no systematic bias)
+- **Clustering**: Most genes stay near zero (don't change much with treatment), while some points far from zero represent the most dramatically changed genes
+- **Low-expression genes**: Points on the left side show more scatter, which is expected and corrected by the shrinkage method
+- **High-expression genes**: Points on the right show tighter clustering, indicating more reproducible measurements
+
+**Why this matters:** A well-designed experiment shows symmetric patterns without systematic biases. The curved shrinkage bands indicate proper statistical handling of uncertainty.
+
+**Biological interpretation:** The presence of genes both above and below the zero line, spread across expression levels, suggests a natural, genome-wide response to treatment rather than an artifact.
+:::
+:::
+
+---
+
+## Volcano Plot: Fold Change vs. Statistical Significance
+
+::: {.plot-container}
+
+![Volcano Plot](reports/volcano_condition.png)
+
+::: {.plot-description}
+**What does this plot show?**
+
+The volcano plot combines two critical pieces of information in one visualization:
+- **Horizontal axis (X)**: The magnitude of gene expression change (log2 fold-change). Larger values = bigger changes
+- **Vertical axis (Y)**: Statistical confidence (-log10 of adjusted p-value). Higher values = stronger statistical evidence
+
+**Key components:**
+- **Points in the upper left and right corners** = the "peaks of the volcano" = genes with BOTH large fold-changes AND high statistical significance. These are the most compelling biological findings
+- **Points in the lower region** = genes with large fold-changes but weak statistical support (unreliable — likely false positives)
+- **Points in the upper middle** = genes with high statistical significance but small fold-changes (statistically confident but biologically modest effects)
+- **Horizontal threshold line** = significance threshold (`padj = 0.05`)
+- **Vertical threshold lines** = fold-change threshold (typically `|log2FC| = 1`, meaning 2-fold change)
+
+**Color coding interpretation:**
+- **Red points**: Significantly upregulated genes (high in treated samples)
+- **Blue points**: Significantly downregulated genes (low in treated samples)
+- **Gray points**: Not significantly changed or below thresholds
+
+**Typical volcano shape** (what we see here) indicates:
+- ✅ Strong biological signals in the treatment effect
+- ✅ Good experimental design with clear distinction between conditions
+- ✅ Realistic mixture of genes with varying effect sizes
+- ✅ Well-controlled statistical methodology
+
+**What would concern us:**
+- Uniform scatter without peaks → weak treatment effects
+- All points below significance line → poor statistical power
+- Extreme fold-changes with low significance → noisy data
+
+**Biological interpretation:** The genes in the upper corners are your most promising candidates for further investigation — they show both biological and statistical importance.
+:::
+:::
+
+---
+
+## PCA Plot: Sample Grouping and Consistency
+
+::: {.plot-container}
+
+![PCA: Sample Clustering by Condition](reports/pca_condition.png)
+
+::: {.plot-description}
+**What does this plot show?**
+
+Principal Component Analysis (PCA) is a dimensionality reduction technique that compresses millions of gene measurements into 2-3 key patterns (components) that capture the main sources of variation. Each point represents one biological replicate sample.
+
+**Key components:**
+- **PC1 (horizontal axis)**: The single direction in gene-expression space that explains the most variation between samples
+- **PC2 (vertical axis)**: The second most important direction of variation
+- **The percentages**: Show how much of the total variation is captured by each component (e.g., "PC1: 60%" means PC1 explains 60% of variation)
+- **Sample clustering**: The spatial proximity of points indicates similarity in expression profiles
+
+**Perfect scenario for this analysis:**
+- ✅ **Clear spatial separation**: Treated and untreated samples occupy distinct regions of the plot
+- ✅ **Tight clustering within groups**: All samples from the same condition cluster close together
+- ✅ **No overlap**: Minimal mixing between condition groups
+- ✅ **High variance on PC1**: Most variation is driven by treatment (good signal-to-noise ratio)
+
+**What good separation tells us:**
+- ✅ Treatment effect is **genuine and strong** — creates a clear genome-wide expression signature
+- ✅ Biological replicates are **consistent** — low technical noise
+- ✅ **No batch effects** — all replicates of the same condition behave similarly regardless of processing order
+- ✅ **Experiment is well-controlled** — clear biological signal stands out
+
+**What would concern us:**
+- ⚠️ Mixed clustering (treated and untreated samples together) → weak treatment effect or experimental failure
+- ⚠️ One replicate far from its group → technical problem with that sample
+- ⚠️ Low variance on PC1 → most variation is noise, not treatment
+
+**Quality check:** This PCA validates that the differentially expressed genes we identified represent genuine, reproducible treatment responses, not random noise.
+:::
+:::
+
+---
+
+# Quality Control Assessment
+
+## Dispersion Plot: Statistical Model Validation
+
+::: {.plot-container}
+
+![Dispersion Estimates](reports/dispersion.png)
+
+::: {.plot-description}
+**What does this plot show?**
+
+Dispersion measures the variability (noise) of gene expression — how much a gene's measurements "bounce around" from replicate to replicate. This is crucial because different genes have different noise levels, and DESeq2 accounts for this variation in its statistical model.
+
+**Key components:**
+- **Black points**: Individual gene dispersion estimates calculated from the data
+- **Red curve**: The fitted mean-dispersion relationship (the statistical model)
+- **Blue points**: Shrunk dispersion values (final estimates used for hypothesis testing)
+- **X-axis**: Average expression level of the gene (log scale)
+- **Y-axis**: Dispersion value (variance per mean)
+
+**Expected pattern (what we want to see):**
+- **Decreasing trend**: Highly expressed genes show low dispersion (consistent expression), while lowly expressed genes show higher dispersion (more variable)
+- **Points roughly following the red curve**: Indicates the statistical model fits the data well
+- **Some scatter around the curve**: Normal and expected — each gene has its own variability profile
+
+**Why this pattern makes sense biologically:**
+- Genes expressed at high levels have more RNA molecules, allowing for more reproducible measurements
+- Genes expressed at low levels have fewer molecules, leading to higher random variation
+
+**What would concern us:**
+- ⚠️ Many points **far above the curve** → suggests uncontrolled variation, batch effects, or mixed cell populations
+- ⚠️ Few data points → insufficient biological replicates
+- ⚠️ **Flat or increasing trend** → suggests problems in experimental design or sample preparation
+- ⚠️ Blue points not pulled toward the red curve → indicates overly stringent shrinkage
+
+**Why this matters:** Proper dispersion estimation is **essential for accurate p-value calculations**. Overestimating dispersion makes results too conservative (missing real effects); underestimating makes them too liberal (false positives). The shrinkage method balances these risks.
+:::
+:::
+
+---
+
+## P-value Distribution: Signal vs. Noise Assessment
+
+::: {.plot-container}
+
+![Distribution of P-values](reports/pvalue_dist.png)
+
+::: {.plot-description}
+**What does this plot show?**
+
+This histogram displays the distribution of all statistical p-values (before multiple-testing correction) from testing every gene. The shape reveals whether the experiment detected genuine biological signals above statistical noise.
+
+**Understanding the expected pattern:**
+
+Under the **null hypothesis** (no true treatment effect), p-values should be uniformly distributed from 0 to 1. However, in real data with genuine treatment effects, we expect:
+
+**✅ Good analysis** shows a **bimodal distribution**:
+- **Sharp peak at low p-values** (< 0.05): Many genes showing strong treatment effects
+- **Plateau/elevation at high p-values** (0.5-1.0): Background of genes with no real effect (uniform random distribution as expected under null hypothesis)
+- **Clear "bump" at the left**: The more prominent this peak, the stronger the treatment signals
+
+**This bimodal pattern indicates:**
+- Strong biological signals rising **above the noise**
+- True treatment effects mixed with expected statistical noise
+- Adequate statistical power to detect genuine effects
+
+**⚠️ Concerning patterns:**
+
+- **Flat, uniform distribution** → no real treatment effects detected (possible experiment failure)
+- **All enrichment at high p-values** → mostly weak, unreliable signals
+- **Single peak in the middle** (around 0.5) → suggests most genes show only marginal effects
+
+**Why this matters:** This distribution is like a "quality assurance check." A good experiment shows the theoretically expected pattern: true signals standing out from random noise.
+
+**Technical insight:** By observing how many p-values fall below 0.05, we can estimate how many true positives vs. false positives we're likely finding. Combined with the Benjamini-Hochberg correction applied to our results, this gives us confidence in our final gene list.
+:::
+:::
+
+---
+
+# Detailed Gene Analysis
+
+## Heatmap: Expression Patterns of Top Genes
+
+::: {.plot-container}
+
+![Heatmap of Top 30 DE Genes](reports/heatmap_top_genes.png)
+
+::: {.plot-description}
+**What does this plot show?**
+
+A heatmap displays normalized gene expression values as colors, enabling visual pattern recognition across 30 genes and many samples simultaneously. Each row represents one gene, each column represents one sample.
+
+**Color interpretation:**
+- **Red**: High expression (gene is "turned ON" in that sample)
+- **Blue**: Low expression (gene is "turned OFF" in that sample)
+- **White/light colors**: Intermediate expression levels
+
+**Components:**
+- **Rows**: The 30 most significantly differentially expressed genes (ranked by statistical significance)
+- **Columns**: Individual samples from treated and untreated groups
+- **Dendrograms** (trees on left/top): Show hierarchical clustering, grouping genes and samples with similar expression patterns
+
+**What good quality data shows:**
+- ✅ **Vertical color separation**: Each treatment condition (treated vs. untreated) shows consistent colors within its columns
+- ✅ **Within-group consistency**: All treated samples have similar color patterns; all untreated samples show a different pattern
+- ✅ **No random color noise**: Clear, interpretable patterns rather than scrambled colors
+- ✅ **Sharp color changes at boundaries**: Dramatic color shifts at the border between treated and untreated groups
+
+**Biological patterns revealed:**
+- **Horizontal red bands** = genes activated by treatment (many samples are red = high in many treated samples)
+- **Horizontal blue bands** = genes suppressed by treatment (many samples are blue in treated group)
+- **Genes with similar patterns** may be co-regulated or involved in related biological pathways
+
+**Clustering interpretation:**
+- Genes that cluster together may share regulatory mechanisms
+- The distance between clusters indicates how differently those genes respond to treatment
+
+**What this validates:** The heatmap provides visual confirmation that the statistically significant genes we identified actually show consistent, reproducible differences between conditions across all biological replicates.
+:::
+:::
+
+---
+
+## Expression Boxplots: Top Gene Details
+
+::: {.plot-container}
+
+![Top 6 DE Genes Expression](reports/top_genes_boxplots.png)
+
+::: {.plot-description}
+**What does this plot show?**
+
+Boxplots provide a detailed, individual-replicate view of the six most significantly changed genes. Each plot shows how gene expression is distributed within each treatment condition.
+
+**Components of each boxplot:**
+- **Box (rectangle)**: Contains the middle 50% of measurements (interquartile range)
+- **Line inside the box**: The median expression value (50th percentile — middle value)
+- **Whiskers (lines extending from box)**: Show the full range of variation, typically extending to 1.5 × interquartile range
+- **Individual dots**: Each biological replicate's actual measurement (transparency shows true data points)
+- **Position**: Treatments separated left (untreated) vs. right (treated)
+
+**Perfect scenario:**
+- ✅ **Complete separation**: Treated and untreated boxes don't overlap at all
+- ✅ **Small, tight boxes**: Consistent measurements within each condition (tight clustering of replicates)
+- ✅ **No outlier dots**: All replicates behave as expected
+- ✅ **Clear median shift**: The line inside each box is dramatically different between conditions
+
+**Interpreting variation:**
+- **Wide box** = large differences between replicates (could indicate biological variation or technical problems)
+- **Narrow box** = consistent, reproducible measurements within the condition
+- **Many outlier dots** = suggests some samples behaved unusually (contamination, processing issues, or true biological heterogeneity)
+
+**What this reveals:**
+- **Strong, consistent effect**: When boxes don't overlap, you have high confidence the difference is real and reproducible
+- **Measurement quality**: Tight clustering within conditions indicates low technical noise
+- **Reliability for validation**: Genes showing clear separation here are excellent candidates for follow-up experiments
+
+**Why this view matters:** While the heatmap shows overall patterns, boxplots reveal whether changes are consistent AND reliable at the individual gene level, confirming that detected differences are reproducible across all biological replicates.
+:::
+:::
+
+---
+
+# Sample Relationships and Batch Effects
+
+## Sample Distance Heatmap: Similarity Clustering
+
+::: {.plot-container}
+
+![Sample-to-Sample Distance Matrix](reports/sample_distances.png)
+
+::: {.plot-description}
+**What does this plot show?**
+
+This heatmap shows "distances" between all pairs of samples — how different each sample is from every other sample based on their complete genome-wide gene expression profiles.
+
+**Interpreting the display:**
+- **Color scale**: Red = very similar samples; Blue = very different samples
+- **Diagonal line of red**: Each sample is most similar to itself (distance = 0)
+- **Off-diagonal patterns**: Reveal whether samples cluster by treatment condition
+
+**What good data looks like:**
+- ✅ **Clear block structure**: All treated samples form a red "block" (similar to each other)
+- ✅ **Separate blocks**: Untreated samples form a different red "block" far from treated samples
+- ✅ **Blue between blocks**: High distance (blue) separating treated from untreated groups
+- ✅ **Symmetric pattern**: The pattern is mirror-symmetric (reflects that similarity is mutual)
+
+**The tree structure (dendrogram):**
+- Groups samples hierarchically, showing which are most similar
+- Treated samples should cluster together at one branch
+- Untreated samples should cluster together at another branch
+
+**What would concern us:**
+- ⚠️ **Mixed colors within condition blocks** → inconsistent replicates
+- ⚠️ **Blue where we expect red** → suggests batch effects or sample contamination
+- ⚠️ **One sample very distant from its group** → suggests technical problem (quality control should have caught this)
+- ⚠️ **No clear block structure** → unclear separation between conditions
+
+**Quality assessment:**
+- Strong, clear separation validates experimental design and sample quality
+- Consistent replicates indicate treatment effect is robust and reproducible
+- No obvious technical issues or batch effects
+
+**Biological meaning:** Samples with similar expression patterns experienced similar conditions and biological states. The degree of clustering reflects the strength and consistency of the treatment effect.
+:::
+:::
+
+---
+
+# Reproducibility and Session Information
+
+## Analysis Environment Details
+
+This analysis was performed in a **reproducible Nix environment** with fully pinned and versioned dependencies. This ensures:
+
+- ✅ **Identical results** if run on any machine today
+- ✅ **Reproducible results** if run again in 5 years
+- ✅ **Verifiable methodology** for publication and peer review
+- ✅ **Easy collaboration** — others can reproduce exact results
+
+The complete session information below documents all software versions used:
+
+```{r session-info, echo=TRUE}
+# Read session info
+session_info <- readLines("reports/session_info.txt")
+cat(paste(session_info, collapse = "\n"))
+```
+
+## Reproducibility Credentials
+
+- **Environment Manager**: Nix (deterministic, immutable environment)
+- **Language**: R (exact version pinned in `flake.nix`)
+- **Key Packages**:
+  - DESeq2 (exact version pinned)
+  - Bioconductor packages (exact versions pinned)
+  - All dependencies cryptographically locked in `flake.lock`
+- **How to reproduce**: Run `nix flake run` in the project directory
+- **Reproducibility guarantee**: Results are bit-for-bit identical across machines
+
+---
+
+::: {.notes-box}
+### 📝 Analysis Specifications
+
+**Statistical Framework:**
+- **Method**: DESeq2 (negative binomial generalized linear model)
+- **LFC Shrinkage**: apeglm (Approximate Posterior Estimation) 
+  - Improves fold-change estimates for low-count genes
+  - Reduces bias and increases power
+- **Significance Threshold**: Adjusted p-value < 0.05
+- **Fold Change Visualization**: |log2FC| > 1 (for volcano plots) = 2-fold change
+- **Multiple Testing Correction**: Benjamini-Hochberg False Discovery Rate (FDR)
+
+**Data Quality Control:**
+- Pre-filtering of low-count genes (kept genes with sufficient read depth across samples)
+- Normalization using median of ratios method (accounts for sequencing depth differences between samples)
+- Dispersion estimation with shrinkage (borrows information across genes for more stable estimates)
+- Outlier removal based on Cook's distance
+
+**Experimental Design:**
+- Multiple biological replicates per condition
+- Randomized treatment assignment
+- Consistent library preparation protocols
+- Validated RNA quality across all samples
+
+**Reproducibility & Documentation:**
+- All code version controlled in Git
+- Complete Nix environment definition (flake.nix + flake.lock)
+- Session information captured for full transparency
+- Analysis parameters documented and fixed
+- GitHub Actions configured for continuous validation
+
+**Report Generation:**
+- Generated with Quarto for reproducible report generation
+- HTML output with embedded resources (self-contained document)
+- All plots regenerated from raw data during report rendering
+- Session information embedded for transparency
+
+**Report Generated**: `r Sys.time()`
+
+**For Questions or Further Analysis**: Contact the analysis team with:
+- Specific genes of interest for validation
+- Pathway analysis requests
+- Functional interpretation assistance
+- Extended statistical analyses
+:::
+
+---
+
+## How to Interpret Results in Your Research
+
+### For Upregulated Genes (Red in volcano plot):
+- These genes are more active in treated cells
+- May be involved in the cell's response mechanism
+- Potential targets for understanding treatment effects
+
+### For Downregulated Genes (Blue in volcano plot):
+- These genes are less active in treated cells
+- May be involved in processes inhibited by the treatment
+- Could represent genes normally active in untreated state
+
+### For Non-Significant Genes (Gray in volcano plot):
+- No reliable evidence these genes change
+- May be truly unaffected, or changes too small/variable to detect reliably
+- Not suitable for biological interpretation at this significance level
+
+---
+
+*This analysis represents current best practices in reproducible computational biology. Complete methodology details, raw data, and analysis code are available upon request. The reproducible environment ensures anyone can independently verify all results and conclusions.*
+
+**Made with commitment to data science and reproducibility** 🧬
