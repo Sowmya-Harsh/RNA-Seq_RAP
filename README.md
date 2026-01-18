@@ -1,7 +1,7 @@
 # RNA-seq Analysis Pipeline with Reproducible Nix Environment
 
 [![Reproducible with Nix](https://img.shields.io/badge/Reproducible-Nix-blue?logo=nixos)](https://nixos.org)
-[![GitHub Actions CI](https://github.com/Sowmya-Harsh/RNA-Seq_RAP/actions/workflows/ci.yml/badge.svg)](https://github.com/Sowmya-Harsh/RNA-Seq_RAP)
+[![GitHub Actions CI](https://github.com/Sowmya-Harsh/RNA-Seq_RAP/actions/workflows/ci.yml/badge.svg)](https://sowmya-harsh.github.io/RNA-Seq_RAP/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Overview
