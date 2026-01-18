@@ -60,7 +60,7 @@ jobs:
 
   deploy-pages:
     needs: test-and-build
-    if: github.ref == 'refs/heads/main' && success()
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       pages: write
