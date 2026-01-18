@@ -1,11 +1,5 @@
 #!/usr/bin/env Rscript
-#' run_pipeline.R: rnaRAP - Reproducible RNA-seq Analysis Pipeline
-#' Main execution script that loads functions and runs the complete analysis
-#'
-#' @description This script sources the analysis_core.R functions and executes
-#'     the complete RNA-seq differential expression pipeline on Pasilla data
-#' @author Your Name
-#' @date 2026-01-18
+# run_pipeline.R: rnaRAP - Reproducible RNA-seq Analysis Pipeline
 
 # ===== SETUP =====
 cat("=== RNA-seq RAP: Reproducible Analysis Pipeline ===\n")
@@ -107,16 +101,27 @@ save_session_info(outpath = "reports/session_info.txt")
 cat("   Session info saved to reports/session_info.txt\n\n")
 
 # ===== 8. RENDER QUARTO REPORT =====
-cat("8. Rendering Quarto report...\n")
+cat("8. Rendering Quarto report as landing page...\n")
 if (file.exists("rnaseq_report.qmd")) {
-  quarto::quarto_render("rnaseq_report.qmd")
-  # Move the rendered HTML to reports folder
-  if (file.exists("rnaseq_report.html")) {
-    file.rename("rnaseq_report.html", "reports/rnaseq_report.html")
+  cat("   Found rnaseq_report.qmd, rendering to index.html...\n")
+  
+  # Render to index.html directly
+  quarto::quarto_render("rnaseq_report.qmd", output_file = "index.html")
+  
+  # Check if HTML was created in root
+  if (file.exists("index.html")) {
+    cat("   Successfully rendered to index.html\n")
+    # Move to reports folder
+    file.rename("index.html", "reports/index.html")
+    cat("   Moved to reports/index.html\n\n")
+  } else {
+    cat("   WARNING: index.html was not created\n")
+    # Fallback: render to default name and rename
+    if (file.exists("rnaseq_report.html")) {
+      file.rename("rnaseq_report.html", "reports/index.html")
+      cat("   Renamed rnaseq_report.html to index.html\n\n")
+    }
   }
-  cat("   HTML report saved: reports/rnaseq_report.html\n\n")
-} else {
-  cat("   rnaseq_report.qmd not found, skipping report generation\n\n")
 }
 
 # ===== COMPLETION =====
@@ -136,4 +141,4 @@ cat("  - Top genes table: reports/top_genes.csv\n")
 cat("  - Top genes markdown: reports/top_genes.md\n")
 cat("  - Session info: reports/session_info.txt\n")
 cat("  - Analysis results (RDS): reports/analysis_results.rds\n")
-cat("  - HTML Report: reports/rnaseq_report.html\n")
+cat("  - HTML Report: reports/index.html\n")
