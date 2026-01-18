@@ -1,0 +1,82 @@
+# Corrected .github/workflows/ci.yml
+name: rnaRAP CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install Nix
+      uses: DeterminateSystems/nix-installer-action@v9
+      
+    - name: Configure Nix for rstats-on-nix
+      uses: cachix/cachix-action@v15
+      with:
+        name: rstats-on-nix
+        signingKey: '${{ secrets.RSTATS_ON_NIX_SIGNING_KEY }}'
+        authToken: '${{ secrets.RSTATS_ON_NIX_AUTH_TOKEN }}'
+
+    - name: Prepare directories
+      run: mkdir -p reports
+        
+    - name: Run Tests
+      run: |
+        nix-shell --run "Rscript run_tests.R"
+        
+    - name: Run Full Pipeline
+      run: |
+        nix-shell --run "Rscript run_pipeline.R"
+        
+    - name: Verify Outputs
+      run: |
+        echo "=== Checking output files ==="
+        ls -la reports/
+        echo ""
+        echo "=== Verifying critical files ==="
+        test -f reports/rnaseq_report.html && echo "✓ HTML report generated" || echo "✗ HTML report NOT found"
+        test -f reports/ma_plot_condition.png && echo "✓ MA plot generated" || echo "✗ MA plot NOT found"
+        test -f reports/top_genes.csv && echo "✓ Top genes table generated" || echo "✗ Top genes table NOT found"
+        test -f reports/session_info.txt && echo "✓ Session info saved" || echo "✗ Session info NOT found"
+        
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: rnaRAP-results
+        path: |
+          reports/
+        retention-days: 30
+
+  deploy-pages:
+    needs: test-and-build
+    if: github.ref == 'refs/heads/main' && success()
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: rnaRAP-results
+        path: ./reports
+        
+    - name: Upload to GitHub Pages
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: './reports'
+        
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
