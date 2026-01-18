@@ -1,4 +1,4 @@
-# Corrected .github/workflows/ci.yml
+# .github/workflows/ci.yml
 name: rnaRAP CI/CD
 
 on:
@@ -6,7 +6,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch:
 
 jobs:
   test-and-build:
@@ -18,43 +18,45 @@ jobs:
     - name: Install Nix
       uses: DeterminateSystems/nix-installer-action@v9
       
-    - name: Configure Nix for rstats-on-nix
+    - name: Setup Nix cache for rstats-on-nix
       uses: cachix/cachix-action@v15
       with:
         name: rstats-on-nix
-        signingKey: '${{ secrets.RSTATS_ON_NIX_SIGNING_KEY }}'
-        authToken: '${{ secrets.RSTATS_ON_NIX_AUTH_TOKEN }}'
-
-    - name: Prepare directories
+        skipPush: true
+        
+    - name: Create reports directory
       run: mkdir -p reports
         
     - name: Run Tests
-      run: |
-        nix-shell --run "Rscript run_tests.R"
+      run: nix-shell --run "Rscript run_tests.R"
         
     - name: Run Full Pipeline
-      run: |
-        nix-shell --run "Rscript run_pipeline.R"
+      run: nix-shell --run "Rscript run_pipeline.R"
         
     - name: Verify Outputs
       run: |
-        echo "=== Checking output files ==="
+        echo "=== Checking generated files ==="
         ls -la reports/
         echo ""
         echo "=== Verifying critical files ==="
-        test -f reports/rnaseq_report.html && echo "✓ HTML report generated" || echo "✗ HTML report NOT found"
-        test -f reports/ma_plot_condition.png && echo "✓ MA plot generated" || echo "✗ MA plot NOT found"
-        test -f reports/top_genes.csv && echo "✓ Top genes table generated" || echo "✗ Top genes table NOT found"
-        test -f reports/session_info.txt && echo "✓ Session info saved" || echo "✗ Session info NOT found"
+        test -f reports/rnaseq_report.html && echo "✓ HTML report generated" || (echo "✗ HTML report NOT found" && exit 1)
+        test -f reports/ma_plot_condition.png && echo "✓ MA plot generated" || (echo "✗ MA plot NOT found" && exit 1)
+        test -f reports/top_genes.csv && echo "✓ Top genes table generated" || (echo "✗ Top genes table NOT found" && exit 1)
+        test -f reports/session_info.txt && echo "✓ Session info saved" || (echo "✗ Session info NOT found" && exit 1)
         
-    - name: Upload Artifacts
+    - name: Upload Results Artifact
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: rnaRAP-results
-        path: |
-          reports/
+        path: reports/
         retention-days: 30
+        
+    - name: Upload to GitHub Pages
+      uses: actions/upload-pages-artifact@v3
+      if: github.ref == 'refs/heads/main'
+      with:
+        path: 'reports/'
 
   deploy-pages:
     needs: test-and-build
@@ -67,16 +69,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-    - uses: actions/download-artifact@v4
-      with:
-        name: rnaRAP-results
-        path: ./reports
-        
-    - name: Upload to GitHub Pages
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: './reports'
-        
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
