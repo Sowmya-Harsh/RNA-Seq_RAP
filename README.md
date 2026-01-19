@@ -112,9 +112,10 @@ Rscript run_pipeline.R
 exit
 ```
 
-### Option 3: Github Pages
+### Option 3: Github Pages:
 
 Check the deployed page in actions or can update and deploy page.
+
 ---
 
 ## Understanding the Pipeline
