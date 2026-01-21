@@ -1,1 +1,10 @@
+# Ignore rendered HTML report in language stats
+index.html linguist-generated=true
+
+# Ignore other generated outputs
+reports/** linguist-generated=true
+
+# Ensure R and Quarto are counted as code
+*.R linguist-detectable=true
+*.qmd linguist-detectable=true
 
