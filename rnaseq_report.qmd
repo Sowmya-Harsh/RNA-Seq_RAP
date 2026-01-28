@@ -483,10 +483,10 @@ The volcano plot combines two critical pieces of information in one visualizatio
 - **Gray points**: Not significantly changed or below thresholds
 
 **Typical volcano shape** (what we see here) indicates:
-- ✅ Strong biological signals in the treatment effect
-- ✅ Good experimental design with clear distinction between conditions
-- ✅ Realistic mixture of genes with varying effect sizes
-- ✅ Well-controlled statistical methodology
+-  Strong biological signals in the treatment effect
+-  Good experimental design with clear distinction between conditions
+-  Realistic mixture of genes with varying effect sizes
+-  Well-controlled statistical methodology
 
 **What would concern us:**
 - Uniform scatter without peaks → weak treatment effects
@@ -517,21 +517,21 @@ Principal Component Analysis (PCA) is a dimensionality reduction technique that 
 - **Sample clustering**: The spatial proximity of points indicates similarity in expression profiles
 
 **Perfect scenario for this analysis:**
-- ✅ **Clear spatial separation**: Treated and untreated samples occupy distinct regions of the plot
-- ✅ **Tight clustering within groups**: All samples from the same condition cluster close together
-- ✅ **No overlap**: Minimal mixing between condition groups
-- ✅ **High variance on PC1**: Most variation is driven by treatment (good signal-to-noise ratio)
+-  **Clear spatial separation**: Treated and untreated samples occupy distinct regions of the plot
+-  **Tight clustering within groups**: All samples from the same condition cluster close together
+-  **No overlap**: Minimal mixing between condition groups
+-  **High variance on PC1**: Most variation is driven by treatment (good signal-to-noise ratio)
 
 **What good separation tells us:**
-- ✅ Treatment effect is **genuine and strong** — creates a clear genome-wide expression signature
-- ✅ Biological replicates are **consistent** — low technical noise
-- ✅ **No batch effects** — all replicates of the same condition behave similarly regardless of processing order
-- ✅ **Experiment is well-controlled** — clear biological signal stands out
+-  Treatment effect is **genuine and strong** — creates a clear genome-wide expression signature
+-  Biological replicates are **consistent** — low technical noise
+-  **No batch effects** — all replicates of the same condition behave similarly regardless of processing order
+-  **Experiment is well-controlled** — clear biological signal stands out
 
 **What would concern us:**
-- ⚠️ Mixed clustering (treated and untreated samples together) → weak treatment effect or experimental failure
-- ⚠️ One replicate far from its group → technical problem with that sample
-- ⚠️ Low variance on PC1 → most variation is noise, not treatment
+-  Mixed clustering (treated and untreated samples together) → weak treatment effect or experimental failure
+-  One replicate far from its group → technical problem with that sample
+-  Low variance on PC1 → most variation is noise, not treatment
 
 **Quality check:** This PCA validates that the differentially expressed genes we identified represent genuine, reproducible treatment responses, not random noise.
 :::
@@ -569,10 +569,10 @@ Dispersion measures the variability (noise) of gene expression — how much a ge
 - Genes expressed at low levels have fewer molecules, leading to higher random variation
 
 **What would concern us:**
-- ⚠️ Many points **far above the curve** → suggests uncontrolled variation, batch effects, or mixed cell populations
-- ⚠️ Few data points → insufficient biological replicates
-- ⚠️ **Flat or increasing trend** → suggests problems in experimental design or sample preparation
-- ⚠️ Blue points not pulled toward the red curve → indicates overly stringent shrinkage
+-  Many points **far above the curve** → suggests uncontrolled variation, batch effects, or mixed cell populations
+-  Few data points → insufficient biological replicates
+-  **Flat or increasing trend** → suggests problems in experimental design or sample preparation
+-  Blue points not pulled toward the red curve → indicates overly stringent shrinkage
 
 **Why this matters:** Proper dispersion estimation is **essential for accurate p-value calculations**. Overestimating dispersion makes results too conservative (missing real effects); underestimating makes them too liberal (false positives). The shrinkage method balances these risks.
 :::
@@ -595,7 +595,7 @@ This histogram displays the distribution of all statistical p-values (before mul
 
 Under the **null hypothesis** (no true treatment effect), p-values should be uniformly distributed from 0 to 1. However, in real data with genuine treatment effects, we expect:
 
-**✅ Good analysis** shows a **bimodal distribution**:
+** Good analysis** shows a **bimodal distribution**:
 - **Sharp peak at low p-values** (< 0.05): Many genes showing strong treatment effects
 - **Plateau/elevation at high p-values** (0.5-1.0): Background of genes with no real effect (uniform random distribution as expected under null hypothesis)
 - **Clear "bump" at the left**: The more prominent this peak, the stronger the treatment signals
@@ -605,7 +605,7 @@ Under the **null hypothesis** (no true treatment effect), p-values should be uni
 - True treatment effects mixed with expected statistical noise
 - Adequate statistical power to detect genuine effects
 
-**⚠️ Concerning patterns:**
+** Concerning patterns:**
 
 - **Flat, uniform distribution** → no real treatment effects detected (possible experiment failure)
 - **All enrichment at high p-values** → mostly weak, unreliable signals
@@ -643,10 +643,10 @@ A heatmap displays normalized gene expression values as colors, enabling visual 
 - **Dendrograms** (trees on left/top): Show hierarchical clustering, grouping genes and samples with similar expression patterns
 
 **What good quality data shows:**
-- ✅ **Vertical color separation**: Each treatment condition (treated vs. untreated) shows consistent colors within its columns
-- ✅ **Within-group consistency**: All treated samples have similar color patterns; all untreated samples show a different pattern
-- ✅ **No random color noise**: Clear, interpretable patterns rather than scrambled colors
-- ✅ **Sharp color changes at boundaries**: Dramatic color shifts at the border between treated and untreated groups
+-  **Vertical color separation**: Each treatment condition (treated vs. untreated) shows consistent colors within its columns
+-  **Within-group consistency**: All treated samples have similar color patterns; all untreated samples show a different pattern
+-  **No random color noise**: Clear, interpretable patterns rather than scrambled colors
+-  **Sharp color changes at boundaries**: Dramatic color shifts at the border between treated and untreated groups
 
 **Biological patterns revealed:**
 - **Horizontal red bands** = genes activated by treatment (many samples are red = high in many treated samples)
@@ -682,10 +682,10 @@ Boxplots provide a detailed, individual-replicate view of the six most significa
 - **Position**: Treatments separated left (untreated) vs. right (treated)
 
 **Perfect scenario:**
-- ✅ **Complete separation**: Treated and untreated boxes don't overlap at all
-- ✅ **Small, tight boxes**: Consistent measurements within each condition (tight clustering of replicates)
-- ✅ **No outlier dots**: All replicates behave as expected
-- ✅ **Clear median shift**: The line inside each box is dramatically different between conditions
+-  **Complete separation**: Treated and untreated boxes don't overlap at all
+-  **Small, tight boxes**: Consistent measurements within each condition (tight clustering of replicates)
+-  **No outlier dots**: All replicates behave as expected
+-  **Clear median shift**: The line inside each box is dramatically different between conditions
 
 **Interpreting variation:**
 - **Wide box** = large differences between replicates (could indicate biological variation or technical problems)
@@ -722,10 +722,10 @@ This heatmap shows "distances" between all pairs of samples — how different ea
 - **Off-diagonal patterns**: Reveal whether samples cluster by treatment condition
 
 **What good data looks like:**
-- ✅ **Clear block structure**: All treated samples form a red "block" (similar to each other)
-- ✅ **Separate blocks**: Untreated samples form a different red "block" far from treated samples
-- ✅ **Blue between blocks**: High distance (blue) separating treated from untreated groups
-- ✅ **Symmetric pattern**: The pattern is mirror-symmetric (reflects that similarity is mutual)
+-  **Clear block structure**: All treated samples form a red "block" (similar to each other)
+-  **Separate blocks**: Untreated samples form a different red "block" far from treated samples
+-  **Blue between blocks**: High distance (blue) separating treated from untreated groups
+-  **Symmetric pattern**: The pattern is mirror-symmetric (reflects that similarity is mutual)
 
 **The tree structure (dendrogram):**
 - Groups samples hierarchically, showing which are most similar
@@ -733,10 +733,10 @@ This heatmap shows "distances" between all pairs of samples — how different ea
 - Untreated samples should cluster together at another branch
 
 **What would concern us:**
-- ⚠️ **Mixed colors within condition blocks** → inconsistent replicates
-- ⚠️ **Blue where we expect red** → suggests batch effects or sample contamination
-- ⚠️ **One sample very distant from its group** → suggests technical problem (quality control should have caught this)
-- ⚠️ **No clear block structure** → unclear separation between conditions
+-  **Mixed colors within condition blocks** → inconsistent replicates
+-  **Blue where we expect red** → suggests batch effects or sample contamination
+-  **One sample very distant from its group** → suggests technical problem (quality control should have caught this)
+-  **No clear block structure** → unclear separation between conditions
 
 **Quality assessment:**
 - Strong, clear separation validates experimental design and sample quality
@@ -755,10 +755,10 @@ This heatmap shows "distances" between all pairs of samples — how different ea
 
 This analysis was performed in a **reproducible Nix environment** with fully pinned and versioned dependencies. This ensures:
 
-- ✅ **Identical results** if run on any machine today
-- ✅ **Reproducible results** if run again in 5 years
-- ✅ **Verifiable methodology** for publication and peer review
-- ✅ **Easy collaboration** — others can reproduce exact results
+-  **Identical results** if run on any machine today
+-  **Reproducible results** if run again in 5 years
+-  **Verifiable methodology** for publication and peer review
+-  **Easy collaboration** — others can reproduce exact results
 
 The complete session information below documents all software versions used:
 
@@ -782,7 +782,7 @@ cat(paste(session_info, collapse = "\n"))
 ---
 
 ::: {.notes-box}
-### 📝 Analysis Specifications
+### Analysis Specifications
 
 **Statistical Framework:**
 - **Method**: DESeq2 (negative binomial generalized linear model)
@@ -807,29 +807,15 @@ cat(paste(session_info, collapse = "\n"))
 
 **Reproducibility & Documentation:**
 - All code version controlled in Git
-- Complete Nix environment definition (flake.nix + flake.lock)
-- Session information captured for full transparency
 - Analysis parameters documented and fixed
 - GitHub Actions configured for continuous validation
 
-**Report Generation:**
-- Generated with Quarto for reproducible report generation
-- HTML output with embedded resources (self-contained document)
-- All plots regenerated from raw data during report rendering
-- Session information embedded for transparency
-
 **Report Generated**: `r Sys.time()`
-
-**For Questions or Further Analysis**: Contact the analysis team with:
-- Specific genes of interest for validation
-- Pathway analysis requests
-- Functional interpretation assistance
-- Extended statistical analyses
 :::
 
 ---
 
-## How to Interpret Results in Your Research
+## How to Interpret Results
 
 ### For Upregulated Genes (Red in volcano plot):
 - These genes are more active in treated cells
@@ -848,6 +834,4 @@ cat(paste(session_info, collapse = "\n"))
 
 ---
 
-*This analysis represents current best practices in reproducible computational biology. Complete methodology details, raw data, and analysis code are available upon request. The reproducible environment ensures anyone can independently verify all results and conclusions.*
-
-**Made with commitment to data science and reproducibility** 🧬
+**Made with commitment to data science and reproducibility** 
