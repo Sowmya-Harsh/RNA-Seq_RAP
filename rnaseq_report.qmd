@@ -760,29 +760,10 @@ This analysis was performed in a **reproducible Nix environment** with fully pin
 -  **Verifiable methodology** for publication and peer review
 -  **Easy collaboration** — others can reproduce exact results
 
-The complete session information below documents all software versions used:
-
-```{r session-info, echo=TRUE}
-# Read session info
-session_info <- readLines("reports/session_info.txt")
-cat(paste(session_info, collapse = "\n"))
-```
-
-## Reproducibility Credentials
-
-- **Environment Manager**: Nix (deterministic, immutable environment)
-- **Language**: R (exact version pinned in `flake.nix`)
-- **Key Packages**:
-  - DESeq2 (exact version pinned)
-  - Bioconductor packages (exact versions pinned)
-  - All dependencies cryptographically locked in `flake.lock`
-- **How to reproduce**: Run `nix flake run` in the project directory
-- **Reproducibility guarantee**: Results are bit-for-bit identical across machines
-
 ---
 
 ::: {.notes-box}
-### Analysis Specifications
+## Analysis Specifications
 
 **Statistical Framework:**
 - **Method**: DESeq2 (negative binomial generalized linear model)
@@ -833,5 +814,3 @@ cat(paste(session_info, collapse = "\n"))
 - Not suitable for biological interpretation at this significance level
 
 ---
-
-**Made with commitment to data science and reproducibility** 
