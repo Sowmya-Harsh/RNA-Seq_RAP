@@ -1,6 +1,6 @@
 library(rix)
-dates <- available_dates()
-latest_date <- tail(dates, 1)
+
+latest_date <- "2026-01-29"
 
 rix(
   date = latest_date,
