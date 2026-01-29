@@ -1,6 +1,6 @@
 library(rix)
 
-latest_date <- "2026-01-29"
+latest_date <- "2026-01-26"
 
 rix(
   date = latest_date,
